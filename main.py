@@ -4,7 +4,7 @@ import asyncio
 
 api_id = 26735008
 api_hash = '6c35a6247e6b6502e5b79173b22af871'
-session_name = 'session1'
+session_name = 'session3'
 your_username = 'Andrii_Bilytskyi'
 
 KEYWORDS = [
