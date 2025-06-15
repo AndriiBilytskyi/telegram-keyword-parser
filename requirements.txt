@@ -1,2 +1,2 @@
-git+https://github.com/LonamiWebs/Telethon@master
+git+https://github.com/LonamiWebs/Telethon@main
 pandas>=2.0.0
