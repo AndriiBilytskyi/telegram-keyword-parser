@@ -1,5 +1,4 @@
 from telethon import TelegramClient
-from telethon.tl.functions.messages import GetMessageReactionsList
 import pandas as pd
 import asyncio
 
@@ -32,7 +31,6 @@ async def main():
         async for msg in client.iter_messages(entity, reverse=True):
             if msg.text and any(kw.lower() in msg.text.lower() for kw in KEYWORDS):
                 sender = await msg.get_sender()
-                # Пропуск сообщений от ботов и системных пользователей
                 if not sender or getattr(sender, 'bot', False):
                     continue
 
@@ -48,44 +46,25 @@ async def main():
                     'reaction_users': ''
                 }
 
-                # Получаем реакции
+                # Только типы реакций и счетчики (без user_id)
                 reactions_list = []
-                reaction_users_list = []
-                if msg.reactions:
-                    try:
-                        result = await client(GetMessageReactionsList(
-                            peer=entity,
-                            id=msg.id,
-                            reaction=None,
-                            limit=100
-                        ))
-                        for reaction_info in result.reactions:
-                            reaction_type = getattr(reaction_info.reaction, 'emoticon', None)
-                            user_id = reaction_info.peer_id.user_id
-                            user_obj = next((u for u in result.users if u.id == user_id), None)
-                            # Исключаем ботов среди пользователей с реакциями
-                            if user_obj and not getattr(user_obj, 'bot', False):
-                                username = getattr(user_obj, 'username', None)
-                                first_name = getattr(user_obj, 'first_name', None)
-                                last_name = getattr(user_obj, 'last_name', None)
-                                reaction_users_list.append(
-                                    f"{user_id} ({username}, {first_name} {last_name}): {reaction_type}"
-                                )
-                                reactions_list.append(reaction_type)
-                    except Exception as ex:
-                        print(f"Не удалось получить реакции для сообщения {msg.id}: {ex}")
-
-                sender_dict['reactions'] = ', '.join(set(filter(None, reactions_list)))
-                sender_dict['reaction_users'] = ' | '.join(reaction_users_list)
+                if msg.reactions and hasattr(msg.reactions, 'results'):
+                    for react in msg.reactions.results:
+                        emoji = getattr(react.reaction, 'emoticon', None)
+                        count = react.count
+                        reactions_list.append(f"{emoji} ({count})")
+                sender_dict['reactions'] = ', '.join(filter(None, reactions_list))
+                sender_dict['reaction_users'] = ''  # поле останется пустым
                 all_rows.append(sender_dict)
 
     df = pd.DataFrame(all_rows)
     df.to_csv('authors_with_keywords.csv', index=False, encoding='utf-8-sig')
     print('Готово! Данные сохранены в authors_with_keywords.csv')
 
-    # Автоматически отправить файл в "Избранные"
+    # Отправить файл в "Избранные"
     await client.send_file('me', 'authors_with_keywords.csv', caption='Выгрузка пользователей по ключевым словам')
     print('Файл authors_with_keywords.csv отправлен в Избранные (Saved Messages) Telegram')
 
 if __name__ == '__main__':
     asyncio.run(main())
+
