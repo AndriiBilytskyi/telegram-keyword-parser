@@ -28,18 +28,18 @@ def parse():
                     if not sender or sender.is_bot:
                         continue
                     sender_dict = {
-    'msg_id': msg.id,
-    'author_id': sender.id,
-    'username': sender.username,
-    'first_name': sender.first_name,
-    'last_name': sender.last_name,
-    'date': msg.date.isoformat() if msg.date else None,
-    'message_text': msg.text,
-    'reactions': ''
-}
+                        'msg_id': msg.id,
+                        'author_id': sender.id,
+                        'username': sender.username,
+                        'first_name': sender.first_name,
+                        'last_name': sender.last_name,
+                        'date': msg.date.isoformat() if msg.date else None,
+                        'message_text': msg.text,
+                        'reactions': ''
+                    }
                     # Реакции (только emoji + count)
                     if msg.reactions and msg.reactions.reactions:
-        sender_dict['reactions'] = ', '.join([f"{r.emoji} ({r.count})" for r in msg.reactions.reactions])
+                        sender_dict['reactions'] = ', '.join([f"{r.emoji} ({r.count})" for r in msg.reactions.reactions])
                     all_rows.append(sender_dict)
         df = pd.DataFrame(all_rows)
         df.to_csv('authors_with_keywords.csv', index=False, encoding='utf-8-sig')
