@@ -39,7 +39,7 @@ def parse():
 }
                     # Реакции (только emoji + count)
                     if msg.reactions and msg.reactions.reactions:
-    sender_dict['reactions'] = ', '.join([f"{r.emoji} ({r.count})" for r in msg.reactions.reactions])
+        sender_dict['reactions'] = ', '.join([f"{r.emoji} ({r.count})" for r in msg.reactions.reactions])
                     all_rows.append(sender_dict)
         df = pd.DataFrame(all_rows)
         df.to_csv('authors_with_keywords.csv', index=False, encoding='utf-8-sig')
